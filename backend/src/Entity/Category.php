@@ -3,13 +3,37 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\CategoryRepository;
+use App\State\CategoryGetProvider;
+use App\State\CategoryPostProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Reference;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ApiResource]
+#[Post(
+    processor: CategoryPostProcessor::class,
+    security: "is_granted('ROLE_USER')"
+)]
+#[GetCollection(
+    provider: CategoryGetProvider::class,
+    security: "is_granted('ROLE_USER')"
+)]
+#[Patch(
+    security: "object.getCreator() === user",
+    uriTemplate: "/category/{id}"
+)]
+#[Delete(
+    security: "is_granted('ROLE_USER') and object.getCreator() === user",
+    uriTemplate: "/category/{id}"
+)]
 class Category
 {
     #[ORM\Id]
@@ -32,6 +56,7 @@ class Category
      */
     #[ORM\ManyToMany(targetEntity: RevisionSheet::class, mappedBy: 'categories')]
     private Collection $revisionSheets;
+
 
     public function __construct()
     {

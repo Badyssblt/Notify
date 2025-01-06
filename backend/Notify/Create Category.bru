@@ -1,0 +1,18 @@
+meta {
+  name: Create Category
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/api/categories
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "title": "Code",
+    "color": "#00000"
+  }
+}

@@ -1,11 +1,11 @@
 meta {
-  name: Edit Revision
+  name: Edit Categories
   type: http
-  seq: 8
+  seq: 11
 }
 
 patch {
-  url: {{baseUrl}}/api/revision/2
+  url: {{baseUrl}}/api/category/1
   body: json
   auth: inherit
 }
@@ -16,6 +16,6 @@ headers {
 
 body:json {
   {
-    "title": "Symfony"
+    "title": "Développement web"
   }
 }
