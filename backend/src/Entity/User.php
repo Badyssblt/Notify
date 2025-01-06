@@ -50,9 +50,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'creator')]
     private Collection $categories;
 
+    /**
+     * @var Collection<int, RevisionSheet>
+     */
+    #[ORM\OneToMany(targetEntity: RevisionSheet::class, mappedBy: 'owner')]
+    private Collection $revisionSheets;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
+        $this->revisionSheets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -166,6 +173,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($category->getCreator() === $this) {
                 $category->setCreator(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RevisionSheet>
+     */
+    public function getRevisionSheets(): Collection
+    {
+        return $this->revisionSheets;
+    }
+
+    public function addRevisionSheet(RevisionSheet $revisionSheet): static
+    {
+        if (!$this->revisionSheets->contains($revisionSheet)) {
+            $this->revisionSheets->add($revisionSheet);
+            $revisionSheet->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRevisionSheet(RevisionSheet $revisionSheet): static
+    {
+        if ($this->revisionSheets->removeElement($revisionSheet)) {
+            // set the owning side to null (unless already changed)
+            if ($revisionSheet->getOwner() === $this) {
+                $revisionSheet->setOwner(null);
             }
         }
 
