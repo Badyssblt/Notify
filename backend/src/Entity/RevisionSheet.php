@@ -3,14 +3,43 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\RevisionSheetRepository;
+use App\State\RevisionSheetGetProvider;
+use App\State\RevisionSheetPostProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: RevisionSheetRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    uriTemplate: "/revisions"
+)]
+#[Post(
+    processor: RevisionSheetPostProcessor::class,
+    security: "is_granted('ROLE_USER')"
+)]
+#[GetCollection(
+    provider: RevisionSheetGetProvider::class,
+    security: "is_granted('ROLE_USER')"
+)]
+#[Get(
+    security: "object.getOwner() === user",
+    uriTemplate: "/revision/{id}"
+)]
+#[Delete(
+    security: "is_granted('ROLE_USER') and object.getOwner() === user",
+    uriTemplate: "/revision/{id}"
+)]
+#[Patch(
+    security: "is_granted('ROLE_USER') and object.getOwner() === user",
+    uriTemplate: "/revision/{id}"
+)]
 class RevisionSheet
 {
     #[ORM\Id]
@@ -36,9 +65,15 @@ class RevisionSheet
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'revisionSheets')]
     private Collection $categories;
 
+    #[ORM\ManyToOne(inversedBy: 'revisionSheets')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $owner = null;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
+        $this->created_at = new \DateTimeImmutable();
+        $this->updated_at = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -114,6 +149,18 @@ class RevisionSheet
     public function removeCategory(Category $category): static
     {
         $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    public function getOwner(): ?User
+    {
+        return $this->owner;
+    }
+
+    public function setOwner(?User $owner): static
+    {
+        $this->owner = $owner;
 
         return $this;
     }
