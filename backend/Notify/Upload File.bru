@@ -1,0 +1,15 @@
+meta {
+  name: Upload File
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/revision/upload
+  body: multipartForm
+  auth: none
+}
+
+body:multipart-form {
+  file: @file(C:\Users\badys\Downloads\Le Cycle De La Vie .pdf)
+}
